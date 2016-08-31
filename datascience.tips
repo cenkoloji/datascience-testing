@@ -1,0 +1,595 @@
+# Installation etc for r #{{{
+
+#Install r
+sudo apt-get install r-base r-base-dev
+# go to https://www.rstudio.com to download rstudio
+
+#Starting r:
+rstudio
+
+# Checking packages
+
+> a <-available.packages()
+> head(rownames(a),3)
+
+#Installing packages:
+
+> install.packages("ggplot2") #Didn't work :/
+#or
+sudo apt-get install r-cran-ggplot2
+
+#Devtools (Don't know if necessary)
+sudo apt-get -y build-dep libcurl4-gnutls-dev
+sudo apt-get -y install libcurl4-gnutls-dev
+
+#Install swirl
+sudo apt-get install libcurl4-openssl-dev
+sudo apt-get install libssl-dev
+> install.packages("swirl")
+
+#Accessing packages
+> library(ggplot2)
+
+# Set workdir: Go to tools and set it to: ~/cernbox/datascience/workdir
+
+# R assignment operator 
+x <- 1
+print(x)
+x <- 1:20 # 1,2...,21
+
+#Attributes of r objects: # names, dimnames # dimensions # class # length
+# To see those
+attribute
+
+#}}}
+
+#introspection {{{
+# Say you want to get info about method 'file'
+str(file)
+help(file)
+?file #equivalent to help(file)
+??file # Returns all topics with string 'file' in the description
+example(file) # Examples on topic, awesome!
+
+#TODO:
+ls(environment(fun)) #fun is a function
+#}}}
+
+#Concatenate c(){{{
+c(0.5,0.6)
+c("a","b")
+
+x <- c(2,3,4,5)
+y <- c(0,1,x,6,7,8,x) #similar to summing lists in python
+
+#}}}
+
+#Vectors: Containers where all objects have same type! {{{
+x <-  c(0.5,0.6)
+x <-  c(TRUE,FALSE)
+x <-  c(T,F)
+x <-  c("a","b","c")
+x <-  9:29
+x <-  c(1+0i, 2+4i)
+x <- vector("numeric", length=10) #Initialize empty vector
+x <- numeric(length=10) #Initialize empty vector
+
+#If you put different types in a vector, it changes type:
+y <- c(1.7,"a") # All becomes string
+y <- c(TRUE,2) # All becomes integer
+y <- c("a",TRUE) # all becomes string
+
+#Converting objects
+x <- 0.6
+as.logical(x)
+as.character(x)
+#}}}
+
+#lists: Like python list, object can be different types #{{{
+x <- list(1,"a",TRUE,1+4i)
+#}}}
+
+#matrix #{{{
+x <- matrix(nrow = 2, ncol = 3)
+x <- matrix(1:10, nrow = 2 , ncol = 5)
+
+x <- 1:3
+y <- 10:12
+m = rbind(x,y) #Combines x,y into a matrix, each is a row
+m = cbind(x,y) #Combines x,y into a matrix, each is a column
+
+names <- c("a","b","c")
+m2 = cbind(m,names) #Combines x,y into a matrix, each is a column, 
+                    #But converts all into string because matrix holds obj of same type
+                    #See: data.frame:
+
+#Creating vector and converting into a matrix
+a <- 1:20
+dim(a) <- c(4,5)
+print(a)
+
+#Special functions to calculate sum or means
+rowSums, rowMeans, colSums,colMeans
+
+#}}}
+
+#Factors: Labels of data in a vector {{{
+x <- factor(c("yes","yes","no","yes","no"))
+x
+table(x)
+unclass(x) # Strip out the class for a vector -> Simply shows x is a vector with a level attribute of no and yes
+
+
+x <- factor(c("yes","yes","no","yes","no"), levels=c("yes","no")) # This gives order to levels attribute, (in previous it was reverse order: no,yes
+#}}}
+
+# NA/NAN checking {{{
+is.na()
+is.nan() #A NaN value is also Na
+#}}}
+
+#Data frames {{{
+#Like Numpy arrays, each column can be a different type
+read.table(...)
+read.csv(...)
+x <- data.frame(foo=1:4, bar=c(T,T,F,F))
+row.names(x)
+nrow(x)
+ncol(x)
+
+#Creating data frame of matrix and names 
+my_matrix <- matrix(1:20,nrow=4,ncol=5) #Data
+patients <- c("Bill","Gina","Kelly","Sean") #Patient names
+my_data <- data.frame(patients, my_matrix) # Combine names
+cnames <- c("patient", "age", "weight", "bp", "rating", "test") #Column names
+colnames(my_data) <- cnames #Label columns
+
+#}}}
+
+# Object names {{{
+x <- 1:3
+names(x)
+
+names(x) <- c("foo","bar","norf")
+print(x)
+
+#or
+x <- list(a=1, b=1, c =2) #Automatically have names
+m <- matrix(1:4,nrow=2,ncol=2)
+dimnames(m) <- list(c("a","b"), c("c","d")) #Names the col and row
+
+# }}}
+
+#Reading tabular data, like np.readtxt{{{
+
+read.table() # Put full thingy here / TODO
+read.csv() #Same as read.table() (default seperator: "," and header=True)
+readLines()
+
+#Large table tips: Read help of read.table
+# comment.char="" (if no comments)
+# Nice trick to get class from first rows
+initial <- read.table("datatable.txt",nrows=100)
+classes <- sapply(initial, class)
+tabAll <- read.table("datatable.txt",colClasses = classes)
+
+#}}}
+
+#Dumping data {{{
+
+dump()
+dput(m) #Prints to terminal
+dput(m,file="outfile.txt") #writes to file
+
+x = "foo"
+y <- data.frame(a=1,b="a")
+dump(c("x","y"), file="data.R") # Will put structures x and y in file
+dput(c("x","y"), file="data2.R") # Will simply put "x","y" in a file
+rm(x,y) #Delete x and y
+source("data.R")
+dput(y)
+dput(y,file = "y.R")
+new.y <- dget("y.R")
+new.y
+
+#}}}
+
+#Connection to file etc{{{
+#
+#File:
+con <- file("foo.txt","r")
+data <- read.csv(con)
+close(con)
+#equivalent to:
+data <- read.csv("foo.txt")
+
+# You use connections to do extra stuff as reading few lines
+con <- file("words.gz")
+x <- readLines(con,10)
+
+#URL
+con <- url("http://www.jhsph.edu","r")
+x <- readLines(con)
+head(x) #Shows 10 lines
+
+#}}}
+
+#Subsetting -> Index starts at 1 !!!!! {{{
+
+x <- list (foo = 1:4, bar = 0.6, zoo = "hello")
+y <- c("a","b","c","d","a")
+z <- list(a = list(10,12,14), b = c(3.14,2.81))
+
+# []  # Returns object of the SAME class as the original (returns a vector for a vector) 
+y[1]  # vector of 1
+y[1:4] #Get a range of elements
+y[x > "a"] #get elements bigger than "a"
+
+x[1]
+x["bar"]
+x[c("foo","zoo")] #Getting subset of elements, same as: x[c(1,3)]
+
+z[c(1,2)] # Returns list and the vector
+
+# [[]] # Returns single element, not necessarily same type,
+x[[1]] 
+x[["bar"]]
+z[[c(1,3)]] #returns single number!!! -> 3rd of 1st (14), same as: x[[1][3]] 
+
+
+#   # Used to get elements by name
+x$bar
+x$b  #Will work same as x$bar, if only name starting with bar is b
+x$foo
+x$b
+
+#Matrices:
+m <- matrix(1:6,2,3)
+n <- matrix(1:6,2,3)
+m[1,2]
+m[2,1]
+m[1,] #Gets you vector
+m[,2] #Gets you vector
+m[,2, drop = FALSE] #Gets you matrix!
+m * n # Element wise multiplication
+m %*% n # Matrix multiplication
+
+
+# Partial matching
+x <- list(aardvark = 1:5)
+x$a # Works as x$aardvark
+x[['a', exact=FALSE]] #Same as above
+
+# Removing NA values:
+x <- c(1,2,NA,3,NA,5)
+bad <- is.na(x) # Creates a logical vector with all na's
+x[!bad]
+
+# To check 2 vectors with positions of NANs
+x <- c(1,2,NA,3,NA,5)
+y <- c(1,NA,2,3,NA,5)
+
+good = complete.cases(x,y)
+x[good]
+y[good]
+
+#dataframes 
+airquality[1:6,]
+good <- complete.cases(airquality)
+airquality[good,][1:6,]
+#}}}
+
+#Masking #{{{
+x <- c("a","b","c","d","a")
+u <- x > "a" #Returns bool vector
+
+#}}}
+
+#if else {{{
+
+#Form:
+if {...} 
+else if {...}
+else {...}
+
+#Assigning value to something
+if(x>3) {
+  y<-10
+} else {
+  y<-0
+}
+#or
+y <- if x(>3) {
+  10
+} else {
+  0
+}
+
+
+#}}}
+
+#for loop {{{
+
+for (i in 1:10){
+  print(i)
+}
+
+x <- c("a","b","c","d")
+
+for (i in 1:4){
+  print(x[i])
+}
+#or
+for (i in 1:4) print(x[i])
+#or
+for (i in seq_along(x)){ #seq_along(x) -> 1,2,3,4
+  print(x[i])
+}
+#or
+for (letter in x){
+  print letter
+}
+
+x <- matrix(1:6,2,3)
+
+for (i in seq_len(nrow(x))) { # [1,2]
+  for (j in seq_len(ncol(x))) { # [1,2,3]
+    print x[i,j]
+  }
+}
+
+#}}}
+
+#while, repeat, next, break {{{
+
+# python equivalents
+# while == while
+# repeat == while(1)
+# next == continue
+# break == break
+
+count <- 0
+while(count < 10) {
+  print(count)
+  count <- count +1
+}
+
+repeat {
+  do_smtg()
+  if (condition1) {
+    next #skip
+  } else if (condition2) {
+    break
+  }
+}
+
+#}}}
+
+# Functions {{{
+
+# R functions are first class objects!
+# Syntax and arguments are similar to python
+# Arguments can be put by order or name fun(10,20) or fun(x=10,y=20)
+# Order of arguments are more liberal compared to python, but use it with order!
+
+#No return! {{{
+add2 <- function(x,y){
+ x+y  # No need for return!!! Last printed value is returned
+} #}}}
+
+#default arguments #{{{
+above <- function(x,otherparameter=10) { #x is vector, n is integer
+  mask <- x > n
+  x[mask]
+}
+above(1:100) #Default is 10 
+above(1:100,20)
+above(1:100,otherparameter=20)
+above(1:100,otherpar=20) #Partial argument name matching!
+
+
+#}}}
+
+# Ex: Calculate the mean of each column in dataframe #{{{
+columean <- function(y, removeNA = TRUE) { 
+    nc <- ncol(y)
+    colmeans <- numeric(nc)
+    for(i in 1:nc){
+      colmeans[i] <- mean(y[,i], na.rm = removeNA)
+    }
+    colmeans
+}
+columean(airquality)
+columean(airquality, removeNA = FALSE)
+columean(airquality, rem = FALSE) #}}}
+
+# lambda functions #{{{
+
+lapply(1:4,function(x) x*2)
+
+#}}}
+
+#}}}
+
+#Lazy evaluation: Arguments are only evaluated as they are needed #{{{
+f <- function(a,b) {
+  if (a>4) a*b
+  else a*2
+}
+f(2) #returns 4
+f(5) #Crashes, need to input second arg
+#}}}
+
+# ... -> When number of arguments are not known or you want to pass all arguments to a function in function {{{
+
+myplot <- function(x,y,type = "i", ...) {
+  plot(x,y,type = type, ...) # All ... transfered here
+}
+
+myfunct <- function(..., arg1,arg2=2) {for (i in list(...)) print(i) }
+myfunct(10,20,10,40,10,arg1=4,arg2=2) #After (...) all arguments MUST be passed with name!
+
+#}}}
+
+# Namespaces and scoping {{{ 
+
+search() # shows current namespaces
+
+# Static/Lexical scoping. Free variables are seached in environment
+# Normally function is defined in the global environment
+# - Check global environment
+# - Check parent environment... If can't find, throw error
+
+f <- function(x,y) {x*2 + y/z} # z is free variable, similar to python
+
+# Functions can be defined in other functions!!!
+
+#Constructor functions {{{
+make.power <- function(n) { #This is a constructor function
+  pow <- function(x) {
+    x^n
+  }
+  pow
+}
+
+cube <- make.power(3)
+cube(3)
+ls(environment(cube)) #Shows "n" "pow" #}}}
+
+TODO: Check lexical scope/dynamic scope
+
+#This is useful when you create a function with several parameters
+
+
+
+
+#}}}
+
+# datetime {{{
+
+#Uses unix timestamp
+# 3 types: date, POSIXct(stores seconds since epoch), POSIXlt(stores day,month, year, second etc...)
+
+#Date -> Don't see much point myself
+x <- as.Date("1970-01-01")
+print(x)
+unclass(x) # Returns 0
+unclass(as.Date("1970-01-02")) #Returns 1
+weekdays(x)
+months(x)
+
+#Time: POSIXct
+x <- Sys.time() #Current datetime, it's a POSIXct object
+x <- as.POSIXct("2012-10-25 01:00:00")
+unclass(x) # Returns unixtime
+
+#Time: POSIXlt
+y <- as.POSIXlt("2012-10-25 01:00:00")
+y <- as.POSIXlt(x) #You can convert one type to other
+unclass(y) #You can see all its attributes ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst, $zone, $gmtoff)
+y[["sec"]] # == y$sec, returns the second member
+x[["sec"]] # ERROR!
+
+
+datestring <- c("January 10, 2012, 10:30","December 12, 2014, 12:52")
+x <- strptime(datestring,"%B %d, %Y, %H:%M")
+
+# Operations can be only done between same types
+x <- as.Date("2012-01-01")
+y <- as.Date("2015-05-12")
+y <- strptime
+
+
+#}}}
+
+#swirl: #{{{
+ When you are at the R prompt (>):
+ | -- Typing skip() allows you to skip the current question.
+ | -- Typing play() lets you experiment with R on your own; swirl will ignore what you do...
+ | -- UNTIL you type nxt() which will regain swirl's attention.
+ | -- Typing bye() causes swirl to exit. Your progress will be saved.
+ | -- Typing main() returns you to swirl's main menu.
+ | -- Typing info() displays these options again.
+#}}}
+
+# Loop functions (lapply ...) {{{
+# It's like for_each
+
+#lapply {{{
+lapply(list,function,...) # ... for 
+
+x <- list(a=1:5,b=rnorm(10))
+lapply(x,mean) #Will return list of 2 means
+
+#With arguments
+lapply(1:4,runif)
+lapply(1:4,runif,min=0,max=10) #min and max are arguments of runif
+
+#Extracting first columns of 2 matrices
+x <- list(a=matrix(1:4,2,2), b= matrix(1:6,3,2))
+lapply(x, function(elt) elt[,1])
+#}}}
+
+#sapply: {{{
+#sapply: If possible, converts the returned value into a vector or matrix (if all return types are same)
+lapply(1:10,function(x) x*2) #returns list
+sapply(1:10,function(x) x*2) #returns vector, one can apply result in mean function,
+
+x <- list(a=matrix(1:4,2,2), b= matrix(1:6,3,2))
+lapply(x, function(elt) elt[,1]) # Returns 2 lists
+sapply(x, function(elt) elt[,1]) # Returns matrix
+#}}}
+
+# apply(list,MARGIN.FUN) {{{
+x <- matrix(rnorm(200),20,10)
+apply(x,2,mean) #Take mean of all cols (10 cols, so returns vec of 10)
+apply(x,1,mean) #Take mean of all rows (20 rows, so returns vec of 20)
+
+
+apply(x,1,quantile,probs=c(0.25, 0.75)) #probs is argument of quantile-> This will return 25% and 75% quantile of all 20 cols
+
+a <- array(rnorm(2*2*10),c(2,2,10)) #3d array
+apply(a,c(1,2),mean) #Take the array, keep dim 1,2 sum over dim3 
+
+
+
+
+#}}}
+
+#mapply(FUN,...,MoreArgs=NULL, SIMPLIFY=TRUE,USE.NAMES=TRUE) {{{
+
+#rep(N,M) Creates a list with value N, written M times
+
+mapply(rep,1:4,4:1) # -> Same as  list(rep(1,4), rep(2,3), rep(3,2), rep(4,1))
+mapply(function(x,y) x*y, 1:4,1:4) # Returns [1, 4, 9, 16]
+mapply(rnorm,1:6,1:6,0.01)  #Here 0.01 is the 3rd variable of rnorm
+#}}}
+
+#tapply(X,INDEX,FUN=NULL,..., simplify=TRUE) {{{
+
+x <- c(rnorm(4,10),rnorm(4,5),rnorm(4,0))
+f <- gl(3,4) # 1 1 1 1 2 2 2 2 3 3 3 3 -> Simply array of indexes to apply functions to.
+tapply(x,f,mean, simplify=TRUE) #  Applies to first 4, second 4 and third 4 numbers
+#}}}
+
+#split -> Useful to use with loop functions {{{
+x <- c(rnorm(4,10),rnorm(4,5),rnorm(4,0))
+f <- gl(3,4) # 1 1 1 1 2 2 2 2 3 3 3 3 -> Simply array of indexes to apply functions to.
+split(x,f) # Creates 3 vectors, simply splits array into 3 using indexes 
+
+library(datasets)
+head(airquality)
+s <- split(airquality,airquality$Month) #Creates dataframes for each month
+lapply(s,function(x) colMeans(x)(x[,c("Ozone","Solar.R","Wind")]))
+sapply(s,function(x) colMeans(x)(x[,c("Ozone","Solar.R","Wind")],rm.na=TRUE))
+
+x <- rnorm(10) ; f1 <- fl(2,5) ; f2 <- fl(5,2)
+split(x,list(f1,f2)) # Returns a list, Run and see what it does. There are some empty levels in the result
+split(x,list(f1,f2),drop= TRUE) # drops the empty levels (for instance indices 1 and 5 never coincide, so element `1.5` is empty
+
+#}}}
+
+# END OF loop}}}
+
+#Debugging {{{
+#}}}
