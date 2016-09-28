@@ -703,5 +703,35 @@ sample(letters,10) #Pick 10 random letters
 
 #Profiling {{{
 #Premature optimization is root of all evil!
+#Design, then optimize
+
+# system.time : Time elapsed by r expression {{{
+# Use for simple things
+system.time(mean(rnorm(1000000)))
+
+#if elapsed>user, CPU is waiting most of the time (not fault of your program)
+system.time(readLines("http://www.jhsph.edu"))
+
+#if user>elapsed, CPU is doing things in parallel #{{{
+hilbert <- function(n){
+        i <- 1:n
+        1/ outer(i-1,i,"+")
+}
+
+system.time(hilbert(1000)) #}}}
+#}}}
+
+# R profiler functions #{{{
+
+Rprof() # Enables profiling, saves function call stack in a file (see help)
+summaryRprof() # Tabulates how long spend in each function (samples every 0.2 sec)
+
+sump<-summaryRprof()
+sump$by.total #Sorts by total time spent in each function (top level functions will always show more!)
+sump$by.self  #Sorts by time spend in function, removes time spent in top level function. More useful!
+
+#Todo, try it in a script!!
+
+#}}}
 
 # }}}
